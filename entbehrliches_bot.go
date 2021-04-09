@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kyokomi/emoji/v2"
+
 	"mvdan.cc/xurls/v2"
 
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -122,13 +124,14 @@ func main() {
 				if strings.Contains(s, url) {
 					count = count + 1
 					log.Printf("Found %s in articles.\n", url)
+					break
 				}
 			}
 
 			if count > 0 {
-				b.Send(m.Chat, "Hatten wa schon!")
+				b.Send(m.Chat, emoji.Sprintf(":thinking: Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"))
 			} else {
-				b.Send(m.Chat, "Cool, kennsch garnet")
+				b.Send(m.Chat, emoji.Sprintf(":flushed: Wow, den kenn ich garnicht! Willst du ihn vielleicht einreichen? https://github.com/noqqe/entbehrlich.es"))
 			}
 		}
 	})
