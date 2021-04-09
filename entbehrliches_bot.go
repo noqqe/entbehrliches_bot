@@ -129,9 +129,9 @@ func main() {
 			}
 
 			if count > 0 {
-				b.Send(m.Chat, emoji.Sprintf(":thinking: Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"))
+				b.Send(m.Chat, emoji.Sprintf(":dog: *Jaul* Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"))
 			} else {
-				b.Send(m.Chat, emoji.Sprintf(":flushed: Wow, den kenn ich garnicht! Willst du ihn vielleicht einreichen? https://github.com/noqqe/entbehrlich.es"))
+				b.Send(m.Chat, emoji.Sprintf(":flushed: Wuff, den kenn ich garnicht! Willst du ihn vielleicht einreichen? https://github.com/noqqe/entbehrlich.es"))
 			}
 		}
 	})
