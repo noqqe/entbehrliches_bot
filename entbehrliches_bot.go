@@ -78,19 +78,13 @@ func main() {
 
 	// Arguments
 	var (
-		apiToken = flag.String("apitoken", "", "Telegram API Token")
-		posts    = flag.String("posts", "", "Directory containing entbehrliches posts")
+		apiToken = os.Getenv("APITOKEN")
+		posts    = os.Getenv("POSTS")
 	)
 	flag.Parse()
 
-	// Validate Arguments
-	if len(*apiToken) == 0 {
-		flag.Usage()
-		os.Exit(1)
-	}
-
 	b, err := tb.NewBot(tb.Settings{
-		Token:  *apiToken,
+		Token:  apiToken,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
 
@@ -101,7 +95,7 @@ func main() {
 
 	// Find all files
 	log.Println("Finding all markdown files")
-	files := findMDFiles(*posts)
+	files := findMDFiles(posts)
 
 	// var existing_wikilinks []string
 	var existing_urls []string
