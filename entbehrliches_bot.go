@@ -74,6 +74,23 @@ func searchFileforWikiLink(f string) []string {
 	return rxStrict.FindAllString(string(fileBytes), -1)
 }
 
+// Build list of all posted wiki links so far
+func initPosts(posts string) []string {
+
+	// Find all files
+	log.Println("Finding all markdown files")
+	files := findMDFiles(posts)
+
+	var existing_urls []string
+
+	log.Println("Loading all urls")
+	for _, f := range files {
+		existing_urls = append(existing_urls, searchFileforWikiLink(f)...)
+	}
+
+	return existing_urls
+}
+
 func main() {
 
 	// Arguments
@@ -93,18 +110,8 @@ func main() {
 		return
 	}
 
-	// Find all files
-	log.Println("Finding all markdown files")
-	files := findMDFiles(posts)
-
-	// var existing_wikilinks []string
-	var existing_urls []string
-
-	log.Println("Loading all urls")
-	for _, f := range files {
-		//existing_wikilinks = append(existing_wikilinks, searchFileforWikiLink(f)[0])
-		existing_urls = append(existing_urls, searchFileforWikiLink(f)...)
-	}
+	// Init wiki list
+	existing_urls := initPosts(posts)
 
 	log.Println("Starting Telegram Bot")
 	b.Handle(tb.OnText, func(m *tb.Message) {
