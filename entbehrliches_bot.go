@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -95,11 +94,12 @@ func main() {
 
 	// Arguments
 	var (
-		apiToken = os.Getenv("APITOKEN")
-		posts    = os.Getenv("POSTS")
+		apiToken string = os.Getenv("APITOKEN")
+		posts    string = os.Getenv("POSTS")
+		orig_m   *tb.Message
 	)
-	flag.Parse()
 
+	// Init new Telegram Bot
 	b, err := tb.NewBot(tb.Settings{
 		Token:  apiToken,
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
@@ -113,8 +113,27 @@ func main() {
 	// Init wiki list
 	existing_urls := initPosts(posts)
 
+	// Telegram Answering
+	// This data format is insane...
+	j := tb.ReplyButton{Text: emoji.Sprintf("Oh, ja! Toller Service hier!")}
+	n := tb.ReplyButton{Text: "Nein, danke"}
+	menu := [][]tb.ReplyButton{
+		[]tb.ReplyButton{j},
+		[]tb.ReplyButton{n},
+	}
+
+	// Handler for all messages
 	log.Println("Starting Telegram Bot")
 	b.Handle(tb.OnText, func(m *tb.Message) {
+
+		// If message is an answer to a previous one
+		if m.IsReply() && m.Text == j.Text && orig_m != nil {
+			rxStrict := xurls.Strict()
+			log.Printf("Ich mach mal nen GH ISSUE auf\n")
+			log.Printf("%v", rxStrict.FindString(orig_m.Text))
+			b.Send(m.Chat, emoji.Sprintf(":dog:Danke für deinen Beitrag, du toller Mensch :heart:"))
+			orig_m = nil
+		}
 
 		var count int = 0
 		url, containsurl := containsWikiURL(m.Text)
@@ -130,9 +149,17 @@ func main() {
 			}
 
 			if count > 0 {
-				b.Send(m.Chat, emoji.Sprintf(":dog: *Jaul* Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"))
+				b.Send(m.Chat, emoji.Sprintf(":dog:*Jaul* Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"), tb.NoPreview, &tb.SendOptions{
+					ReplyTo: m})
 			} else {
-				b.Send(m.Chat, emoji.Sprintf(":flushed: Wuff, den kenn ich garnicht! Willst du ihn vielleicht einreichen? https://github.com/noqqe/entbehrlich.es"))
+				b.Send(m.Chat, emoji.Sprintf(":flushed:Wuff, den kenn ich garnicht! Willst du ihn vielleicht einreichen?"), &tb.SendOptions{ReplyTo: m}, &tb.ReplyMarkup{
+					ReplyKeyboard:       menu,
+					ForceReply:          true,
+					ReplyKeyboardRemove: true,
+					OneTimeKeyboard:     true,
+				})
+				// Remember message
+				orig_m = m
 			}
 		}
 	})
