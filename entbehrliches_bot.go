@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,12 +10,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/go-github/v34/github"
 	"github.com/kyokomi/emoji/v2"
-
-	"mvdan.cc/xurls/v2"
-
+	"golang.org/x/oauth2"
 	tb "gopkg.in/tucnak/telebot.v2"
+	"mvdan.cc/xurls/v2"
 )
+
+type IssueRequest struct {
+	Title     *string   `json:"title,omitempty"`
+	Body      *string   `json:"body,omitempty"`
+	Labels    *[]string `json:"labels,omitempty"`
+	Assignee  *string   `json:"assignee,omitempty"`
+	State     *string   `json:"state,omitempty"`
+	Milestone *int      `json:"milestone,omitempty"`
+	Assignees *[]string `json:"assignees,omitempty"`
+}
 
 // Checks if message contains wiki url
 func containsWikiURL(msg string) (string, bool) {
@@ -60,6 +71,29 @@ func findMDFiles(root string) []string {
 		}
 	}
 	return matches
+}
+
+func createGithubIssue(via, url string) string {
+	var token string = os.Getenv("GITHUB_TOKEN")
+	var repo_owner string = os.Getenv("GITHUB_OWNER")
+	var repo_name string = os.Getenv("GITHUB_REPO")
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: token},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+
+	client := github.NewClient(tc)
+
+	t := fmt.Sprintf("Bitte hinzufügen %s", url)
+	b := fmt.Sprintf("Der Link %s wurde uns von %s zugesendet", url, via)
+	ir := &github.IssueRequest{
+		Title: &t,
+		Body:  &b,
+	}
+
+	i, _, _ := client.Issues.Create(ctx, repo_owner, repo_name, ir)
+	return *i.HTMLURL
 }
 
 // Searches a single markdown file for wiki url occourences
@@ -129,9 +163,9 @@ func main() {
 		// If message is an answer to a previous one
 		if m.IsReply() && m.Text == j.Text && orig_m != nil {
 			rxStrict := xurls.Strict()
-			log.Printf("Ich mach mal nen GH ISSUE auf\n")
-			log.Printf("%v", rxStrict.FindString(orig_m.Text))
-			b.Send(m.Chat, emoji.Sprintf(":dog:Danke für deinen Beitrag, du toller Mensch :heart:"))
+			b.Send(m.Chat, emoji.Sprintf(":dog:Danke für deinen Beitrag, du toller Mensch!"))
+			issue_url := createGithubIssue(orig_m.Sender.Username, rxStrict.FindString(orig_m.Text))
+			b.Send(m.Chat, emoji.Sprintf(":tada: %s :heart:", issue_url), tb.NoPreview)
 			orig_m = nil
 		}
 
