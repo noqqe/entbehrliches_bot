@@ -149,8 +149,8 @@ func main() {
 
 	// Telegram Answering
 	// This data format is insane...
-	j := tb.ReplyButton{Text: emoji.Sprintf("Oh, ja! Toller Service hier!")}
-	n := tb.ReplyButton{Text: "Nein, danke"}
+	j := tb.ReplyButton{Text: emoji.Sprintf("Oh, ja! Toller Service hier! Lauf Bamse!")}
+	n := tb.ReplyButton{Text: "Nein Bamse, schon gut. Brauchen wir nicht einreichen. Sitz."}
 	menu := [][]tb.ReplyButton{
 		[]tb.ReplyButton{j},
 		[]tb.ReplyButton{n},
@@ -163,9 +163,8 @@ func main() {
 		// If message is an answer to a previous one
 		if m.IsReply() && m.Text == j.Text && orig_m != nil {
 			rxStrict := xurls.Strict()
-			b.Send(m.Chat, emoji.Sprintf(":dog:Danke für deinen Beitrag, du toller Mensch!"))
 			issue_url := createGithubIssue(orig_m.Sender.Username, rxStrict.FindString(orig_m.Text))
-			b.Send(m.Chat, emoji.Sprintf(":tada: %s :heart:", issue_url), tb.NoPreview)
+			b.Send(m.Chat, emoji.Sprintf(":tada:Danke für deinen Beitrag %s, du toller Mensch! %s", orig_m.Sender.Username, issue_url), tb.NoPreview)
 			orig_m = nil
 		}
 
@@ -183,14 +182,16 @@ func main() {
 			}
 
 			if count > 0 {
-				b.Send(m.Chat, emoji.Sprintf(":dog:*Jaul* Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"), tb.NoPreview, &tb.SendOptions{
+				b.Send(m.Chat, emoji.Sprintf(":dog:Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"), tb.NoPreview, &tb.SendOptions{
 					ReplyTo: m})
 			} else {
-				b.Send(m.Chat, emoji.Sprintf(":flushed:Wuff, den kenn ich garnicht! Willst du ihn vielleicht einreichen?"), &tb.SendOptions{ReplyTo: m}, &tb.ReplyMarkup{
+				b.Send(m.Chat, emoji.Sprintf(":flushed:Denn Artikel kenne ich noch garnicht!"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
+				b.Send(m.Chat, emoji.Sprintf(":memo:Willst du ihn vielleicht einreichen?"), &tb.SendOptions{ReplyTo: m}, &tb.ReplyMarkup{
 					ReplyKeyboard:       menu,
 					ForceReply:          true,
 					ReplyKeyboardRemove: true,
 					OneTimeKeyboard:     true,
+					Selective:           true,
 				})
 				// Remember message
 				orig_m = m
