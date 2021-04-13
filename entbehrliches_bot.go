@@ -130,7 +130,6 @@ func main() {
 	var (
 		apiToken string = os.Getenv("APITOKEN")
 		posts    string = os.Getenv("POSTS")
-		orig_m   *tb.Message
 	)
 
 	// Init new Telegram Bot
@@ -147,32 +146,15 @@ func main() {
 	// Init wiki list
 	existing_urls := initPosts(posts)
 
-	// Telegram Answering
-	// This data format is insane...
-	j := tb.ReplyButton{Text: emoji.Sprintf("Oh, ja! Toller Service hier! Lauf Bamse!")}
-	n := tb.ReplyButton{Text: "Nein Bamse, schon gut. Brauchen wir nicht einreichen. Sitz."}
-	menu := [][]tb.ReplyButton{
-		[]tb.ReplyButton{j},
-		[]tb.ReplyButton{n},
-	}
-
 	// Handler for all messages
 	log.Println("Starting Telegram Bot")
 	b.Handle(tb.OnText, func(m *tb.Message) {
 
-		// If message is an answer to a previous one
-		if m.IsReply() && m.Text == j.Text && orig_m != nil {
-			rxStrict := xurls.Strict()
-			issue_url := createGithubIssue(orig_m.Sender.Username, rxStrict.FindString(orig_m.Text))
-			b.Send(m.Chat, emoji.Sprintf(":tada:Danke für deinen Beitrag %s, du toller Mensch! %s", orig_m.Sender.Username, issue_url), tb.NoPreview)
-			orig_m = nil
-		}
-
-		var count int = 0
 		url, containsurl := containsWikiURL(m.Text)
 		if containsurl {
 
 			log.Printf("Searching for %s in archives...\n", url)
+			var count int = 0
 			for _, s := range existing_urls {
 				if strings.Contains(s, url) {
 					count = count + 1
@@ -182,19 +164,9 @@ func main() {
 			}
 
 			if count > 0 {
-				b.Send(m.Chat, emoji.Sprintf(":dog:Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"), tb.NoPreview, &tb.SendOptions{
-					ReplyTo: m})
+				b.Send(m.Chat, emoji.Sprintf(":dog:Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
 			} else {
 				b.Send(m.Chat, emoji.Sprintf(":flushed:Denn Artikel kenne ich noch garnicht!"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
-				b.Send(m.Chat, emoji.Sprintf(":memo:Willst du ihn vielleicht einreichen?"), &tb.SendOptions{ReplyTo: m}, &tb.ReplyMarkup{
-					ReplyKeyboard:       menu,
-					ForceReply:          true,
-					ReplyKeyboardRemove: true,
-					OneTimeKeyboard:     true,
-					Selective:           true,
-				})
-				// Remember message
-				orig_m = m
 			}
 		}
 	})
