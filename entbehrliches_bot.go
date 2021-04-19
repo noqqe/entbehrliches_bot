@@ -166,7 +166,9 @@ func main() {
 			if count > 0 {
 				b.Send(m.Chat, emoji.Sprintf(":dog:Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
 			} else {
-				b.Send(m.Chat, emoji.Sprintf(":flushed:Denn Artikel kenne ich noch garnicht!"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
+        b.Send(m.Chat, emoji.Sprintf(":flushed:Den Artikel kannte ich noch garnicht! Hab ihn eingereicht:tada:"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
+        rxStrict := xurls.Strict()
+        createGithubIssue(m.Sender.Username, rxStrict.FindString(m.Text))
 			}
 		}
 	})
