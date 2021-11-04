@@ -73,6 +73,29 @@ func findMDFiles(root string) []string {
 	return matches
 }
 
+func existsInGithubIssues(url string) bool {
+	var token string = os.Getenv("GITHUB_TOKEN")
+	var repo_owner string = os.Getenv("GITHUB_OWNER")
+	var repo_name string = os.Getenv("GITHUB_REPO")
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: token},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	for page := 0; page < 10; page++ {
+		ir := &github.IssueListByRepoOptions{ListOptions: github.ListOptions{PerPage: 100, Page: page}}
+		i, _, _ := client.Issues.ListByRepo(ctx, repo_owner, repo_name, ir)
+		for issue := 0; issue < len(i); issue++ {
+			if strings.Contains(*i[issue].Title, url) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func createGithubIssue(via, url string) string {
 	var token string = os.Getenv("GITHUB_TOKEN")
 	var repo_owner string = os.Getenv("GITHUB_OWNER")
@@ -163,12 +186,16 @@ func main() {
 				}
 			}
 
+			if existsInGithubIssues(url) {
+				count = count + 1
+			}
+
 			if count > 0 {
 				b.Send(m.Chat, emoji.Sprintf(":dog:Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
 			} else {
-        b.Send(m.Chat, emoji.Sprintf(":flushed:Den Artikel kannte ich noch garnicht! Hab ihn eingereicht:tada:"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
-        rxStrict := xurls.Strict()
-        createGithubIssue(m.Sender.Username, rxStrict.FindString(m.Text))
+				b.Send(m.Chat, emoji.Sprintf(":flushed:Den Artikel kannte ich noch garnicht! Hab ihn eingereicht:tada:"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
+				rxStrict := xurls.Strict()
+				createGithubIssue(m.Sender.Username, rxStrict.FindString(m.Text))
 			}
 		}
 	})
