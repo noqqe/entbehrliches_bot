@@ -191,9 +191,23 @@ func main() {
 			}
 
 			if count > 0 {
-				b.Send(m.Chat, emoji.Sprintf(":dog:Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
+				b.Send(m.Chat,
+					emoji.Sprintf(":dog:Der Artikel kommt mir doch sehr bekannt vor, ich denke den hatten wir schon!"),
+					tb.NoPreview,
+					&tb.SendOptions{ReplyTo: m},
+					&tb.ReplyMarkup{
+						ReplyKeyboard:       [][]tb.ReplyButton{},
+						ReplyKeyboardRemove: true,
+					})
 			} else {
-				b.Send(m.Chat, emoji.Sprintf(":flushed:Den Artikel kannte ich noch garnicht! Hab ihn eingereicht:tada:"), tb.NoPreview, &tb.SendOptions{ReplyTo: m})
+				b.Send(m.Chat,
+					emoji.Sprintf(":tada::tada::tada:Den Artikel kannte ich noch garnicht! Hab ihn eingereicht!"),
+					tb.NoPreview,
+					&tb.SendOptions{ReplyTo: m},
+					&tb.ReplyMarkup{
+						ReplyKeyboard:       [][]tb.ReplyButton{},
+						ReplyKeyboardRemove: true,
+					})
 				rxStrict := xurls.Strict()
 				createGithubIssue(m.Sender.Username, rxStrict.FindString(m.Text))
 			}
