@@ -40,7 +40,10 @@ func containsWikiURL(msg string) (string, bool) {
 	for _, s := range wikiurls {
 		if strings.Contains(msg, s) {
 			rxStrict := xurls.Strict()
-			return rxStrict.FindString(msg), true
+			// Remove mobile urls to prevent duplication
+			url_w_o_de := strings.Replace(rxStrict.FindString(msg), "://de.m.", "://de.", 1)
+			url_w_o_en := strings.Replace(url_w_o_de, "://en.m.", "://en.", 1)
+			return url_w_o_en, true
 		}
 	}
 	return "", false
@@ -188,6 +191,7 @@ func main() {
 
 			if existsInGithubIssues(url) {
 				count = count + 1
+				log.Printf("Found %s in Github Issues.\n", url)
 			}
 
 			if count > 0 {
