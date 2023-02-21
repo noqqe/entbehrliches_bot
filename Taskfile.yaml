@@ -11,7 +11,7 @@ tasks:
   build:
     cmds:
       - go mod tidy
-      - go build -ldflags "-X main.Version=`git describe --tags`"  -v bamse.go
+      - GOOS=linux go build -ldflags "-X main.Version=`git describe --tags`"  -v bamse.go
     sources:
       - "bamse.go"
     generates:
