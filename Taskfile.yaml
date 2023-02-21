@@ -1,0 +1,31 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+
+  test:
+    cmds:
+      - go test -v -cover
+
+  build:
+    cmds:
+      - go build -ldflags "-X main.Version=`git describe --tags`"  -v bamse.go
+    sources:
+      - "bamse.go"
+    generates:
+      - "./bamse"
+
+  release:
+    cmds:
+      - task: test
+      - task: build
+      - git tag | tail -5
+      - read -p "Version 1.1.1 " version ; git tag $version ; docker build -t noqqe/entbehrliches_bot:$version .
+      - git push --tags
+
+  default:
+    cmds:
+      - task: test
+      - task: build
+

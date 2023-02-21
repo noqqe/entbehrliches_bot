@@ -1,4 +1,4 @@
-FROM golang:1.16
+FROM golang:1.19
 
 # ARG APITOKEN
 # ARG POSTS
@@ -14,8 +14,5 @@ ENV GITHUB_TOKEN ${GITHUB_TOKEN}
 WORKDIR /go/src/app
 COPY . /go/src/app
 
-RUN go get -v ./...
-RUN go build
-
-# Run nichtparasoup
-CMD [ "./entbehrliches_bot" ]
+# Run bamse bot
+CMD [ "./bamse" ]
