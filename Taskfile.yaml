@@ -10,6 +10,7 @@ tasks:
 
   build:
     cmds:
+      - go mod tidy
       - go build -ldflags "-X main.Version=`git describe --tags`"  -v bamse.go
     sources:
       - "bamse.go"
@@ -22,6 +23,7 @@ tasks:
       - task: build
       - git tag | tail -5
       - read -p "Version 1.1.1 " version ; git tag $version ; docker build -t noqqe/entbehrliches_bot:$version .
+      - docker push -a noqqe/entbehrliches_bot
       - git push --tags
 
   default:
