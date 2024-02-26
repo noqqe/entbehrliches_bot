@@ -22,8 +22,8 @@ tasks:
       - task: test
       - task: build
       - git tag | tail -5
-      - read -p "Version 1.1.1 " version ; git tag $version ; docker build -t noqqe/entbehrliches_bot:$version .
-      - docker push -a noqqe/entbehrliches_bot
+      - read -p "Version 1.1.1 " version ; git tag $version ; docker build -t ghcr.io/noqqe/entbehrliches_bot:$version .
+      - docker push -a ghcr.io/noqqe/entbehrliches_bot
       - git push --tags
 
   default:
